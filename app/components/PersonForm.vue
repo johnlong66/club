@@ -23,6 +23,13 @@
       </label>
     </div>
     <div class="field">
+      <label>Land</label>
+      <select v-model="form.country">
+        <option :value="null">— kein Land —</option>
+        <option v-for="c in countries" :key="c.code" :value="c.code">{{ c.flag }} {{ c.label }}</option>
+      </select>
+    </div>
+    <div class="field">
       <label>Kommentar</label>
       <textarea v-model="form.comment" placeholder="Notizen zur Person..." rows="2" />
     </div>
@@ -39,10 +46,12 @@
 
 <script setup lang="ts">
 import type { Person } from '@/stores/people'
+import { useCountries } from '@/composables/useCountries'
 
 const props = defineProps<{ initial?: Person | null }>()
 const emit = defineEmits<{ submit: [data: Omit<Person, 'id'>]; cancel: [] }>()
 
+const { countries } = useCountries()
 const isEdit = !!props.initial
 
 const form = reactive({
@@ -52,6 +61,7 @@ const form = reactive({
   nicknameUnsure: props.initial?.nicknameUnsure ?? false,
   meetingDay: props.initial?.meetingDay ?? '',
   comment: props.initial?.comment ?? '',
+  country: props.initial?.country ?? 'DE',
 })
 
 watch(() => props.initial, (val) => {
@@ -61,6 +71,7 @@ watch(() => props.initial, (val) => {
   form.nicknameUnsure = val?.nicknameUnsure ?? false
   form.meetingDay = val?.meetingDay ?? ''
   form.comment = val?.comment ?? ''
+  form.country = val?.country ?? 'DE'
 })
 
 function submit() {
@@ -93,6 +104,17 @@ textarea {
   transition: border-color 0.15s;
 }
 textarea:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
 .nickname-input-wrap { position: relative; display: flex; align-items: center; }
 .nickname-input-wrap input { flex: 1; }
 .asterisk {

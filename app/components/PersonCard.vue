@@ -10,7 +10,10 @@
         <span v-if="person.nickname" class="nickname">"{{ person.nickname }}"<span v-if="person.nicknameUnsure" class="asterisk" title="Unsure">*</span></span>
         <span v-else-if="person.nicknameUnsure" class="badge-unsure">Spitzname unsicher?</span>
       </div>
-      <p class="meeting-day">Kennengelernt am {{ formattedDate }}</p>
+      <p class="meeting-day">
+        Kennengelernt am {{ formattedDate }}
+        <span v-if="person.country" class="flag">{{ flagForCode(person.country) }}</span>
+      </p>
       <p v-if="person.comment" class="comment">{{ person.comment }}</p>
     </div>
     <div class="card-actions">
@@ -30,8 +33,10 @@
 
 <script setup lang="ts">
 import type { Person } from '@/stores/people'
+import { useCountries } from '@/composables/useCountries'
 
 const props = defineProps<{ person: Person }>()
+const { flagForCode } = useCountries()
 defineEmits<{ edit: [person: Person]; delete: [id: string] }>()
 
 const formattedDate = computed(() => {
@@ -61,7 +66,8 @@ const formattedDate = computed(() => {
   border: 1px solid #fde68a; border-radius: 0.35rem;
   padding: 0.1rem 0.45rem; font-weight: 500;
 }
-.meeting-day { margin: 0.2rem 0 0; font-size: 0.82rem; color: #9ca3af; }
+.meeting-day { margin: 0.2rem 0 0; font-size: 0.82rem; color: #9ca3af; display: flex; align-items: center; gap: 0.35rem; }
+.flag { font-size: 1rem; line-height: 1; }
 .comment { margin: 0.25rem 0 0; font-size: 0.85rem; color: #6b7280; white-space: pre-wrap; }
 .card-actions { display: flex; gap: 0.25rem; }
 .icon-btn {

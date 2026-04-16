@@ -11,13 +11,15 @@ db.exec(`
     nickname TEXT,
     nicknameUnsure INTEGER NOT NULL DEFAULT 0,
     meetingDay TEXT NOT NULL,
-    comment TEXT
+    comment TEXT,
+    country TEXT
   )
 `)
 
 // migrate existing tables
 try { db.exec(`ALTER TABLE people ADD COLUMN prenameUnknown INTEGER NOT NULL DEFAULT 0`) } catch {}
 try { db.exec(`ALTER TABLE people ADD COLUMN comment TEXT`) } catch {}
+try { db.exec(`ALTER TABLE people ADD COLUMN country TEXT`) } catch {}
 try { db.exec(`ALTER TABLE people ADD COLUMN nicknameUnsure INTEGER NOT NULL DEFAULT 0`) } catch {}
 try { db.exec(`UPDATE people SET nicknameUnsure = nicknameUnknown WHERE nicknameUnknown IS NOT NULL`) } catch {}
 try { db.exec(`ALTER TABLE people DROP COLUMN nicknameUnknown`) } catch {}

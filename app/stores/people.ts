@@ -9,6 +9,7 @@ export interface Person {
   nicknameUnsure: boolean
   meetingDay: string
   comment: string | null
+  country: string | null
 }
 
 export const usePeopleStore = defineStore('people', () => {
