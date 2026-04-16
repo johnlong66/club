@@ -1,22 +1,31 @@
 name: Deploy club calc
 
+
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow one concurrent deployment
 concurrency:
   group: 'pages'
   cancel-in-progress: true
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # Single deploy job since we're just deploying
   deploy:
     environment:
       name: github-pages
@@ -25,35 +34,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
+      # - name: Set up Node
+      #   uses: actions/setup-node@v5
+      #   with:
+      #     node-version: lts/*
+      #     cache: 'npm'
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
-
       - name: Install dependencies
         run: bun install
-
       - name: Build
         run: bun run build
-
-      - name: Password-protect pages with Staticrypt
-        run: |
-          npx staticrypt dist/**/*.html dist/*.html \
-            --password "${{ secrets.PAGE_PASSWORD }}" \
-            --short \
-            --remember 0 \
-            -r \
-            -d dist
-        env:
-          PAGE_PASSWORD: ${{ secrets.PAGE_PASSWORD }}
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
+          # Upload dist folder
           path: './dist'
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
