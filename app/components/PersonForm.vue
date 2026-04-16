@@ -3,7 +3,7 @@
     <div class="field">
       <label>Vorname</label>
       <div class="nickname-input-wrap">
-        <input v-model="form.prename" :placeholder="form.prenameUnknown ? '' : 'z. B. Max'" :readonly="form.prenameUnknown" />
+        <input v-model="form.prename" :readonly="form.prenameUnknown" />
         <span v-if="form.prenameUnknown" class="asterisk" title="Unbekannt">*</span>
       </div>
       <label class="checkbox-label">
@@ -14,7 +14,7 @@
     <div class="field">
       <label>Spitzname</label>
       <div class="nickname-input-wrap">
-        <input v-model="form.nickname" placeholder="z. B. Maxi" />
+        <input v-model="form.nickname"  />
         <span v-if="form.nicknameUnsure" class="asterisk" title="Nicht ganz sicher">*</span>
       </div>
       <label class="checkbox-label">
