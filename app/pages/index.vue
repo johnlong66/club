@@ -51,7 +51,7 @@ const filtered = computed(() => {
   const q = search.value.toLowerCase().trim()
   if (!q) return store.people
   return store.people.filter(
-    (p) => p.prename.toLowerCase().includes(q) || p.nickname.toLowerCase().includes(q),
+    (p) => (p.prename && p.prename.toLowerCase().includes(q)) || (p.nickname && p.nickname.toLowerCase().includes(q)),
   )
 })
 

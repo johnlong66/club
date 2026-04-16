@@ -10,18 +10,25 @@
     </div>
 
     <template v-else>
-      <!-- Pie chart: people per date -->
-      <div class="chart-card">
-        <VChart :option="pieOption" autoresize style="height: 300px;" />
-      </div>
-
-      <!-- Choropleth map: people per European country -->
+       <!-- Choropleth map: people per European country -->
       <div class="chart-card">
         <p class="chart-title">Herkunft nach Land</p>
         <VChart v-if="mapReady" :option="mapOption" autoresize style="height: 460px;" />
         <div v-else class="loading">Karte wird geladen…</div>
       </div>
 
+      <!-- Pie chart: people per date -->
+      <div class="chart-card">
+        <VChart :option="pieOption" autoresize style="height: 300px;" />
+      </div>
+
+      <!-- Bar chart: people per month -->
+      <div class="chart-card">
+        <p class="chart-title">Personen pro Monat</p>
+        <VChart :option="monthOption" autoresize style="height: 240px;" />
+      </div>
+
+     
       <!-- Date groups -->
       <div class="groups">
         <section v-for="group in grouped" :key="group.date" class="group">
@@ -49,12 +56,12 @@
 import VChart from 'vue-echarts'
 import { use, registerMap } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { PieChart, MapChart } from 'echarts/charts'
-import { TooltipComponent, LegendComponent, VisualMapComponent, GeoComponent } from 'echarts/components'
+import { PieChart, MapChart, BarChart } from 'echarts/charts'
+import { TooltipComponent, LegendComponent, VisualMapComponent, GeoComponent, GridComponent } from 'echarts/components'
 import { usePeopleStore } from '@/stores/people'
 import { useCountries } from '@/composables/useCountries'
 
-use([CanvasRenderer, PieChart, MapChart, TooltipComponent, LegendComponent, VisualMapComponent, GeoComponent])
+use([CanvasRenderer, PieChart, MapChart, BarChart, TooltipComponent, LegendComponent, VisualMapComponent, GeoComponent, GridComponent])
 
 const store = usePeopleStore()
 const { flagForCode, countries } = useCountries()
@@ -89,6 +96,48 @@ const countryCounts = computed(() => {
     }
   }
   return map
+})
+
+// --- Monthly overview ---
+const monthOption = computed(() => {
+  const map = new Map<string, number>()
+  for (const p of store.people) {
+    const [year, month] = p.meetingDay.split('-')
+    const key = `${year}-${month}`
+    map.set(key, (map.get(key) ?? 0) + 1)
+  }
+  const sorted = [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
+  const labels = sorted.map(([key]) => {
+    const [year, month] = key.split('-')
+    return new Date(+year, +month - 1).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
+  })
+  const values = sorted.map(([, v]) => v)
+
+  return {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: 32, right: 16, top: 16, bottom: 40 },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      axisLabel: { fontSize: 11, color: '#6b7280', rotate: labels.length > 8 ? 35 : 0 },
+      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisTick: { show: false },
+    },
+    yAxis: {
+      type: 'value',
+      minInterval: 1,
+      axisLabel: { fontSize: 11, color: '#6b7280' },
+      splitLine: { lineStyle: { color: '#f3f4f6' } },
+    },
+    series: [{
+      type: 'bar',
+      data: values,
+      barMaxWidth: 40,
+      itemStyle: { color: '#4f46e5', borderRadius: [4, 4, 0, 0] },
+      emphasis: { itemStyle: { color: '#4338ca' } },
+      label: { show: true, position: 'top', fontSize: 11, color: '#374151' },
+    }],
+  }
 })
 
 const countryLabel = (code: string) =>
@@ -165,8 +214,8 @@ const mapOption = computed(() => {
       type: 'map',
       map: 'europe',
       roam: true,
-      zoom: 1.2,
-      center: [15, 54],
+      zoom: 8,
+      center: [15, 48],
       label: { show: false },
       emphasis: {
         label: { show: false },
