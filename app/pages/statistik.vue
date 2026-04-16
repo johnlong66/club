@@ -75,11 +75,18 @@ onMounted(() => {
 // --- Country counts ---
 const countryCounts = computed(() => {
   const map = new Map<string, number>()
+  const set = new Set<string>()
   for (const p of store.people) {
     if (!p.country){
       p.country = 'DE' // Default to Germany if no country is set
     }
-    map.set(p.country, (map.get(p.country) ?? 0) + 1)
+    const key = `${p.prename}####${p.nickname}`
+    if (!set.has(key)) {
+      set.add(key)
+      map.set(p.country, (map.get(p.country) ?? 0) + 1)
+    } else {
+      continue // Skip duplicates based on prename and nickname
+    }
   }
   return map
 })
