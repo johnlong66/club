@@ -1,48 +1,29 @@
-import Database from 'better-sqlite3'
-import { join } from 'path'
+import mongoose from 'mongoose'
 
-const db = new Database('people.db')
+let connected = false
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS people (
-    id TEXT PRIMARY KEY,
-    prename TEXT,
-    prenameUnknown INTEGER NOT NULL DEFAULT 0,
-    nickname TEXT,
-    nicknameUnsure INTEGER NOT NULL DEFAULT 0,
-    meetingDay TEXT NOT NULL,
-    comment TEXT,
-    country TEXT
-  )
-`)
-
-// migrate existing tables
-try { db.exec(`ALTER TABLE people ADD COLUMN prenameUnknown INTEGER NOT NULL DEFAULT 0`) } catch {}
-try { db.exec(`ALTER TABLE people ADD COLUMN comment TEXT`) } catch {}
-try { db.exec(`ALTER TABLE people ADD COLUMN country TEXT`) } catch {}
-try { db.exec(`ALTER TABLE people ADD COLUMN nicknameUnsure INTEGER NOT NULL DEFAULT 0`) } catch {}
-try { db.exec(`UPDATE people SET nicknameUnsure = nicknameUnknown WHERE nicknameUnknown IS NOT NULL`) } catch {}
-try { db.exec(`ALTER TABLE people DROP COLUMN nicknameUnknown`) } catch {}
-
-// remove NOT NULL constraints from prename and nickname by recreating the table
-const hasBadConstraints = (db.prepare(`SELECT "notnull" FROM pragma_table_info('people') WHERE name='nickname'`).get() as any)?.notnull === 1
-if (hasBadConstraints) {
-  db.exec(`
-    BEGIN;
-    ALTER TABLE people RENAME TO _people_old;
-    CREATE TABLE people (
-      id TEXT PRIMARY KEY,
-      prename TEXT,
-      prenameUnknown INTEGER NOT NULL DEFAULT 0,
-      nickname TEXT,
-      nicknameUnsure INTEGER NOT NULL DEFAULT 0,
-      meetingDay TEXT NOT NULL,
-      comment TEXT
-    );
-    INSERT INTO people SELECT id, prename, prenameUnknown, nickname, nicknameUnsure, meetingDay, comment FROM _people_old;
-    DROP TABLE _people_old;
-    COMMIT;
-  `)
+export async function connect() {
+  if (connected) return
+  const uri = useRuntimeConfig().mongodbUri as string
+  console.log('Connecting to MongoDB with URI:', uri, useRuntimeConfig);
+  await mongoose.connect(uri)
+  connected = true
 }
 
-export default db
+const PersonSchema = new mongoose.Schema(
+  {
+    prename: { type: String, default: null },
+    prenameUnknown: { type: Boolean, default: false },
+    nickname: { type: String, default: null },
+    nicknameUnsure: { type: Boolean, default: false },
+    meetingDay: { type: String, required: true },
+    comment: { type: String, default: null },
+    country: { type: String, default: null },
+  },
+  {
+    toJSON: { virtuals: true, versionKey: false, transform: (_, r) => { delete r._id; return r } },
+    toObject: { virtuals: true },
+  }
+)
+
+export const Person = mongoose.models.Person ?? mongoose.model('Person', PersonSchema)

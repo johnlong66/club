@@ -1,6 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  ssr: false,
   modules: ['@pinia/nuxt', '@vite-pwa/nuxt'],
   pwa: {
     registerType: 'autoUpdate',
@@ -16,5 +17,8 @@ export default defineNuxtConfig({
         { src: 'pwa-512x512.svg', sizes: '512x512', type: 'image/svg+xml' },
       ],
     },
+  },
+  runtimeConfig: {
+    mongodbUri: 'not defined in .env !!!!!!!',
   },
 })
