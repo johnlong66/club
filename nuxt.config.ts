@@ -18,9 +18,6 @@ export default defineNuxtConfig({
       ],
     },
   },
-  app: {
-    baseURL: '/club',
-  }
   runtimeConfig: {
     mongodbUri: 'mongodb+srv://Krolock:MxzPKgR0DBXxRO1U@pizza.gll2x1j.mongodb.net/club',
   },
